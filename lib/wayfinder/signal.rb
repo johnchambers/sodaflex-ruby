@@ -15,6 +15,8 @@ require_relative "signal/configuration"
 require_relative "signal/signature"
 require_relative "signal/redactor"
 require_relative "signal/envelope"
+require_relative "signal/exception_report"
+require_relative "signal/exception_throttle"
 require_relative "signal/client"
 
 module Wayfinder
@@ -126,14 +128,23 @@ module Wayfinder
         track("deployment.failed", subject: release, properties: properties)
       end
 
-      # Sends the exception's class, message and backtrace location — never its
-      # bindings or local variables, which routinely contain customer data.
+      # Sends the exception's class, message and backtrace — never its bindings
+      # or local variables, which routinely contain customer data.
+      #
+      # Returns nil without sending anything when the exception is one Rails
+      # raises in the ordinary course of serving traffic, or when that class has
+      # already been reported enough times this minute. Both are silent on
+      # purpose: they are the normal case, not a failure.
       def exception_reported(exception, **properties)
-        track("exception.reported", properties: properties.merge(
-          exception_class: exception.class.name,
-          message: exception.message.to_s.truncate(500),
-          location: Array(exception.backtrace).first(5)
-        ))
+        return nil if ExceptionReport.ignored?(exception, config.ignore_exceptions)
+        return nil unless exception_throttle.allow?(exception.class.name)
+
+        track("exception.reported",
+              properties: ExceptionReport.call(exception).merge(properties))
+      end
+
+      def exception_throttle
+        @exception_throttle ||= ExceptionThrottle.new(limit: config.max_exceptions_per_minute)
       end
 
       # Sends a synthetic event so a new connection can be verified end to end
