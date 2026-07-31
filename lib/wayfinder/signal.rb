@@ -8,6 +8,9 @@ require "active_support/core_ext/object/blank"
 require "active_support/core_ext/string/access"   # String#first
 require "active_support/core_ext/string/filters"  # String#truncate
 require "active_support/core_ext/hash/except"
+require "active_support/core_ext/hash/keys"    # symbolize_keys
+require "active_support/concern"
+require "active_support/core_ext/numeric/time"      # 90.days
 require "active_job"
 
 require_relative "signal/version"
@@ -15,6 +18,7 @@ require_relative "signal/configuration"
 require_relative "signal/signature"
 require_relative "signal/redactor"
 require_relative "signal/envelope"
+require_relative "signal/attribution"
 require_relative "signal/exception_report"
 require_relative "signal/exception_throttle"
 require_relative "signal/client"
@@ -117,6 +121,17 @@ module Wayfinder
       def support_requested(customer, message:, **properties)
         track("support.conversation_started", customer: customer,
                                               properties: properties.merge(message: message.to_s.truncate(2_000)))
+      end
+
+      # Somebody showed interest. `attribution` is whatever Attribution captured
+      # on their first visit, which is why it is a separate argument: it is not
+      # something the caller assembles, it is something they pass through.
+      def lead_created(attribution: {}, **properties)
+        track("lead.created", properties: (attribution || {}).symbolize_keys.merge(properties))
+      end
+
+      def demo_requested(attribution: {}, **properties)
+        track("demo.requested", properties: (attribution || {}).symbolize_keys.merge(properties))
       end
 
       def feature_requested(customer, request:, **properties)
