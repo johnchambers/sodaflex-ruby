@@ -23,6 +23,10 @@ module Wayfinder
   # Namespaced under Wayfinder rather than as a top-level `Signal`, which Ruby
   # already defines (Signal.trap, Signal.list).
   module Signal
+    # Raised only by wayfinder:signal:test_error, so a test error is obvious in
+    # Wayfinder rather than looking like a real one somebody has to investigate.
+    class TestError < StandardError; end
+
     Error = Class.new(StandardError)
     DeliveryFailed = Class.new(Error)
     PermanentlyRejected = Class.new(Error)
