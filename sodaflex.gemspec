@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
     raises into the host application: if SodaFlex is unavailable, your
     application must not notice.
   DESCRIPTION
-  spec.homepage = "https://github.com/johnchambers/sodaflex"
+  spec.homepage = "https://github.com/johnchambers/sodaflex-ruby"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 

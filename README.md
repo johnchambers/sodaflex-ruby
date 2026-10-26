@@ -1,8 +1,11 @@
 # sodaflex
 
+The `sodaflex` gem. The repository is `sodaflex-ruby` because `sodaflex` is the
+application's own.
+
 Sends operational events from a Rails application to SodaFlex.
 
-[![CI](https://github.com/johnchambers/sodaflex/actions/workflows/ci.yml/badge.svg)](https://github.com/johnchambers/sodaflex/actions/workflows/ci.yml)
+[![CI](https://github.com/johnchambers/sodaflex-ruby/actions/workflows/ci.yml/badge.svg)](https://github.com/johnchambers/sodaflex-ruby/actions/workflows/ci.yml)
 
 The gem is deliberately small. It knows how to build an event envelope, sign it,
 and hand it to Active Job. It has no opinion about what any event means — that is
