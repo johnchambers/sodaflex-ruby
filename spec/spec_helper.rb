@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "active_job"
-require "wayfinder/signal"
+require "sodaflex"
 
 ActiveJob::Base.queue_adapter = :test
 ActiveJob::Base.logger = Logger.new(IO::NULL)
@@ -14,17 +14,17 @@ RSpec.configure do |config|
 
   # Configuration is global, so a leak between examples would make a later one
   # pass for the wrong reason.
-  config.before { Wayfinder::Signal.reset! }
+  config.before { SodaFlex.reset! }
 
   config.include Module.new {
     def configure_signal(**overrides)
-      Wayfinder::Signal.configure do |c|
-        c.endpoint = overrides.fetch(:endpoint, "https://wayfinder.test/api/signal/events")
-        c.product_key = overrides.fetch(:product_key, "wfk_test_abc123")
+      SodaFlex.configure do |c|
+        c.endpoint = overrides.fetch(:endpoint, "https://app.sodaflex.test/api/signal/events")
+        c.brand_key = overrides.fetch(:brand_key, "wfk_test_abc123")
         c.signing_secret = overrides.fetch(:signing_secret, "a-signing-secret")
         c.environment = overrides.fetch(:environment, "test")
         c.logger = Logger.new(IO::NULL)
-        overrides.except(:endpoint, :product_key, :signing_secret, :environment)
+        overrides.except(:endpoint, :brand_key, :signing_secret, :environment)
           .each { |key, value| c.public_send(:"#{key}=", value) }
       end
     end

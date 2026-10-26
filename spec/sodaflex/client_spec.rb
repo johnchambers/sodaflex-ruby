@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Wayfinder::Signal::Client do
+RSpec.describe SodaFlex::Client do
   before { configure_signal }
 
   let(:envelope) { { "id" => "evt_1", "name" => "customer.created" } }
@@ -27,20 +27,20 @@ RSpec.describe Wayfinder::Signal::Client do
 
     it "signs the exact body it sends" do
       request = capture_request
-      expected = Wayfinder::Signal::Signature.generate(
+      expected = SodaFlex::Signature.generate(
         body: request.body,
-        timestamp: request["X-Wayfinder-Timestamp"],
+        timestamp: request["X-SodaFlex-Timestamp"],
         secret: "a-signing-secret"
       )
 
-      expect(request["X-Wayfinder-Signature"]).to eq(expected)
+      expect(request["X-SodaFlex-Signature"]).to eq(expected)
     end
 
     it "identifies the product and the gem" do
       request = capture_request
 
-      expect(request["X-Wayfinder-Product-Key"]).to eq("wfk_test_abc123")
-      expect(request["X-Wayfinder-Gem-Version"]).to eq(Wayfinder::Signal::VERSION)
+      expect(request["X-SodaFlex-Brand-Key"]).to eq("wfk_test_abc123")
+      expect(request["X-SodaFlex-Gem-Version"]).to eq(SodaFlex::VERSION)
       expect(request["Content-Type"]).to eq("application/json")
     end
 
@@ -63,7 +63,7 @@ RSpec.describe Wayfinder::Signal::Client do
       expect(result).to be_retryable
     end
 
-    # A payload Wayfinder will never accept must not be retried into the void.
+    # A payload SodaFlex will never accept must not be retried into the void.
     it "does not retry a 401 or a 422" do
       [ 401, 422 ].each do |code|
         stub_response(code)
@@ -79,9 +79,9 @@ RSpec.describe Wayfinder::Signal::Client do
     end
   end
 
-  # The guarantee the whole gem exists to keep: an unavailable Wayfinder must be
+  # The guarantee the whole gem exists to keep: an unavailable SodaFlex must be
   # invisible to the application that depends on it.
-  describe "when Wayfinder is unreachable" do
+  describe "when SodaFlex is unreachable" do
     it "returns a failure rather than raising, on a refused connection" do
       allow_any_instance_of(Net::HTTP).to receive(:request).and_raise(Errno::ECONNREFUSED)
 
@@ -106,7 +106,7 @@ RSpec.describe Wayfinder::Signal::Client do
     end
 
     it "does nothing at all when not configured" do
-      Wayfinder::Signal.reset!
+      SodaFlex.reset!
 
       result = described_class.new.deliver([ envelope ])
       expect(result).not_to be_success
@@ -116,8 +116,8 @@ RSpec.describe Wayfinder::Signal::Client do
 
   describe "timeouts" do
     it "keeps them short, because this runs inside somebody else's application" do
-      expect(Wayfinder::Signal.config.open_timeout).to be <= 5
-      expect(Wayfinder::Signal.config.read_timeout).to be <= 5
+      expect(SodaFlex.config.open_timeout).to be <= 5
+      expect(SodaFlex.config.read_timeout).to be <= 5
     end
   end
 end

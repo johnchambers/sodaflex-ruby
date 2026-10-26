@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
-require_relative "lib/wayfinder/signal/version"
+require_relative "lib/sodaflex/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "wayfinder-signal"
-  spec.version = Wayfinder::Signal::VERSION
+  spec.name = "sodaflex"
+  spec.version = SodaFlex::VERSION
   spec.authors = [ "John Chambers" ]
-  spec.summary = "Send operational events from a Rails application to Wayfinder."
+  spec.summary = "Send what happens in a Rails application to SodaFlex."
   spec.description = <<~DESCRIPTION.strip
-    A deliberately small client for Wayfinder's Signal ingestion API. Events are
-    signed with HMAC-SHA256, delivered asynchronously through Active Job, and
-    carry a client-generated idempotency key so redelivery is a no-op. The gem
-    never raises into the host application: if Wayfinder is unavailable, your
+    A deliberately small client for SodaFlex's event API. Events are signed with
+    HMAC-SHA256, delivered asynchronously through Active Job, and carry a
+    client-generated idempotency key so redelivery is a no-op. The gem never
+    raises into the host application: if SodaFlex is unavailable, your
     application must not notice.
   DESCRIPTION
-  spec.homepage = "https://github.com/johnchambers/wayfinder-signal"
+  spec.homepage = "https://github.com/johnchambers/sodaflex"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 

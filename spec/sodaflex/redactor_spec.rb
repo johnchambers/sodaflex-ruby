@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Wayfinder::Signal::Redactor do
+RSpec.describe SodaFlex::Redactor do
   let(:keys) { %w[password token secret] }
 
   def scrub(value) = described_class.call(value, keys)
@@ -11,7 +11,7 @@ RSpec.describe Wayfinder::Signal::Redactor do
     expect(result.value).to eq({ "plan" => "pro" })
   end
 
-  # Wayfinder refuses any payload containing a forbidden key name at all, so
+  # SodaFlex refuses any payload containing a forbidden key name at all, so
   # leaving "password" => "[redacted]" in place would make the event
   # undeliverable — redaction would silently cost the whole event rather than
   # one field.

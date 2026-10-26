@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-RSpec.describe Wayfinder::Signal::Signature do
+RSpec.describe SodaFlex::Signature do
   let(:body) { '{"events":[{"id":"evt_1"}]}' }
   let(:timestamp) { 1_785_000_000 }
   let(:secret) { "a-signing-secret" }
 
-  # A fixed vector. Wayfinder verifies with an independent implementation of the
+  # A fixed vector. SodaFlex verifies with an independent implementation of the
   # same scheme, so if this value ever changes, every connected product breaks.
   # Changing it is a breaking change to the wire protocol, not a refactor.
   it "produces a stable signature for known inputs" do

@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-RSpec.describe Wayfinder::Signal do
+RSpec.describe SodaFlex do
   describe "configuration" do
     it "is not ready until endpoint, key and secret are all set" do
       expect(described_class.config).not_to be_ready
 
-      described_class.configure { |c| c.endpoint = "https://wayfinder.test/api/signal/events" }
+      described_class.configure { |c| c.endpoint = "https://app.sodaflex.test/api/signal/events" }
       expect(described_class.config).not_to be_ready
 
       configure_signal
@@ -37,7 +37,7 @@ RSpec.describe Wayfinder::Signal do
 
     it "enqueues an envelope" do
       expect { described_class.track("customer.created") }.to change { enqueued_jobs.size }.by(1)
-      expect(enqueued_jobs.last[:job]).to eq(Wayfinder::Signal::DeliveryJob)
+      expect(enqueued_jobs.last[:job]).to eq(SodaFlex::DeliveryJob)
     end
 
     it "returns the envelope it enqueued" do
@@ -61,13 +61,13 @@ RSpec.describe Wayfinder::Signal do
     before { configure_signal }
 
     it "returns nil rather than raising when the envelope cannot be built" do
-      allow(Wayfinder::Signal::Envelope).to receive(:build).and_raise("boom")
+      allow(SodaFlex::Envelope).to receive(:build).and_raise("boom")
 
       expect { expect(described_class.track("customer.created")).to be_nil }.not_to raise_error
     end
 
     it "returns nil rather than raising when the queue is unavailable" do
-      allow(Wayfinder::Signal::DeliveryJob).to receive(:perform_later)
+      allow(SodaFlex::DeliveryJob).to receive(:perform_later)
         .and_raise(RuntimeError, "queue is down")
 
       expect { described_class.track("customer.created") }.not_to raise_error

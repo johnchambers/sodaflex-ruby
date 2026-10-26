@@ -5,7 +5,7 @@ require "spec_helper"
 # Reporting exceptions differs from reporting a signup in ways that make a bad
 # day worse if ignored. These are the three mechanisms Honeybadger's gem has and
 # this one did not.
-RSpec.describe Wayfinder::Signal::ExceptionReport do
+RSpec.describe SodaFlex::ExceptionReport do
   def raised(klass = StandardError, message = "boom")
     raise klass, message
   rescue StandardError => e
@@ -132,11 +132,11 @@ RSpec.describe Wayfinder::Signal::ExceptionReport do
     it "leaves out its own frames, which are noise in somebody else's report" do
       error = raised
       error.set_backtrace([
-        "/gems/wayfinder-signal/lib/wayfinder/signal/client.rb:1:in 'deliver'",
+        "/gems/sodaflex/lib/sodaflex/client.rb:1:in 'deliver'",
         "#{Dir.pwd}/app/models/order.rb:42:in 'total'"
       ])
 
-      expect(described_class.call(error)[:location].join).not_to include("wayfinder/signal")
+      expect(described_class.call(error)[:location].join).not_to include("lib/sodaflex")
     end
   end
 

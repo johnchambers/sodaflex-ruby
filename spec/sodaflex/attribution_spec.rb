@@ -5,7 +5,7 @@ require "spec_helper"
 # The part that decides whether attribution works at all. Somebody lands on
 # /?utm_source=reddit, reads for a week, then submits a form on /contact — by
 # which point the parameters are gone and the referrer is your own site.
-RSpec.describe Wayfinder::Signal::Attribution do
+RSpec.describe SodaFlex::Attribution do
   # A stand-in for a Rails controller: the concern only touches params, cookies,
   # the referrer and the URL.
   let(:controller_class) do
@@ -15,7 +15,7 @@ RSpec.describe Wayfinder::Signal::Attribution do
       def self.before_action(*) = nil
       def self.helper_method(*) = nil
 
-      include Wayfinder::Signal::Attribution
+      include SodaFlex::Attribution
 
       attr_accessor :request, :cookies
 
@@ -26,7 +26,7 @@ RSpec.describe Wayfinder::Signal::Attribution do
           .new(params.transform_keys(&:to_s), referer, host, url, true)
       end
 
-      def capture! = send(:capture_wayfinder_attribution)
+      def capture! = send(:capture_sodaflex_attribution)
     end
   end
 
@@ -41,29 +41,29 @@ RSpec.describe Wayfinder::Signal::Attribution do
       controller = capture(params: { utm_source: "reddit", utm_medium: "social",
                                      utm_campaign: "launch" })
 
-      expect(controller.wayfinder_attribution).to include(
+      expect(controller.sodaflex_attribution).to include(
         "source" => "reddit", "medium" => "social", "campaign" => "launch"
       )
     end
 
     it "accepts them without the utm_ prefix too" do
-      expect(capture(params: { source: "podcast" }).wayfinder_attribution["source"]).to eq("podcast")
+      expect(capture(params: { source: "podcast" }).sodaflex_attribution["source"]).to eq("podcast")
     end
 
     it "keeps click identifiers, for reconciling with an ad platform later" do
-      expect(capture(params: { gclid: "abc123" }).wayfinder_attribution["gclid"]).to eq("abc123")
+      expect(capture(params: { gclid: "abc123" }).sodaflex_attribution["gclid"]).to eq("abc123")
     end
 
     it "keeps an external referrer" do
       controller = capture(referer: "https://chatgpt.com/c/123")
 
-      expect(controller.wayfinder_attribution["referrer"]).to eq("https://chatgpt.com/c/123")
+      expect(controller.sodaflex_attribution["referrer"]).to eq("https://chatgpt.com/c/123")
     end
 
     it "records the page they landed on, which says what they were after" do
       controller = capture(params: { utm_source: "reddit" }, url: "https://nibble.ie/for-takeaways")
 
-      expect(controller.wayfinder_attribution["landing_page"]).to eq("https://nibble.ie/for-takeaways")
+      expect(controller.sodaflex_attribution["landing_page"]).to eq("https://nibble.ie/for-takeaways")
     end
 
     # Our own pages are not a channel. Without this the first internal click
@@ -71,13 +71,13 @@ RSpec.describe Wayfinder::Signal::Attribution do
     it "ignores our own site as a referrer" do
       controller = capture(referer: "https://nibble.ie/pricing", host: "nibble.ie")
 
-      expect(controller.wayfinder_attribution).to be_empty
+      expect(controller.sodaflex_attribution).to be_empty
     end
 
     it "records nothing when there is nothing to record" do
       controller = capture
 
-      expect(controller.wayfinder_attribution).to be_empty
+      expect(controller.sodaflex_attribution).to be_empty
       expect(controller.cookies).to be_empty
     end
   end
@@ -95,7 +95,19 @@ RSpec.describe Wayfinder::Signal::Attribution do
       second = controller_class.new(params: { utm_source: "retargeting" }, cookies: cookies)
       second.capture!
 
-      expect(second.wayfinder_attribution["source"]).to eq("reddit")
+      expect(second.sodaflex_attribution["source"]).to eq("reddit")
+    end
+
+    # Somebody who first arrived while the product ran wayfinder-signal still
+    # has the old cookie, and that visit is still their first.
+    it "keeps a first touch recorded under the cookie's old name" do
+      cookies = { described_class::LEGACY_COOKIE => { "source" => "reddit" }.to_json }
+      controller = controller_class.new(params: { utm_source: "retargeting" }, cookies: cookies)
+      controller.capture!
+
+      expect(controller.sodaflex_attribution["source"]).to eq("reddit")
+      expect(controller.wayfinder_attribution).to eq(controller.sodaflex_attribution)
+      expect(cookies).not_to have_key(described_class::COOKIE)
     end
   end
 
@@ -121,13 +133,13 @@ RSpec.describe Wayfinder::Signal::Attribution do
     it "reads an empty attribution rather than raising on a corrupt cookie" do
       controller = controller_class.new(cookies: { described_class::COOKIE => "not json" })
 
-      expect(controller.wayfinder_attribution).to eq({})
+      expect(controller.sodaflex_attribution).to eq({})
     end
 
     it "truncates anything absurdly long" do
       controller = capture(params: { utm_campaign: "x" * 5_000 })
 
-      expect(controller.wayfinder_attribution["campaign"].length).to eq(described_class::MAX_LENGTH)
+      expect(controller.sodaflex_attribution["campaign"].length).to eq(described_class::MAX_LENGTH)
     end
 
     # Attribution is never worth an exception in somebody's request path.

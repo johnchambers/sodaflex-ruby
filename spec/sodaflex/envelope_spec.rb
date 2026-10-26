@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Wayfinder::Signal::Envelope do
+RSpec.describe SodaFlex::Envelope do
   before { configure_signal(release: "2026.07.30.1") }
 
   def build(name = "customer.created", **options)
@@ -49,7 +49,7 @@ RSpec.describe Wayfinder::Signal::Envelope do
 
     it "includes the configured release and gem version in context" do
       expect(build["context"]).to include("release" => "2026.07.30.1",
-                                          "gem_version" => Wayfinder::Signal::VERSION)
+                                          "gem_version" => SodaFlex::VERSION)
     end
 
     it "omits keys that have no value rather than sending nulls" do

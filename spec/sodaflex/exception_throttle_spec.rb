@@ -5,7 +5,7 @@ require "spec_helper"
 # One bad deploy raises the same error on every request. Without a cap, a broken
 # page becomes a broken job queue too, and the hundredth identical report tells
 # nobody anything the first did not.
-RSpec.describe Wayfinder::Signal::ExceptionThrottle do
+RSpec.describe SodaFlex::ExceptionThrottle do
   subject(:throttle) { described_class.new(limit: 3) }
 
   it "allows up to the limit" do
@@ -27,7 +27,7 @@ RSpec.describe Wayfinder::Signal::ExceptionThrottle do
   end
 
   it "says once that it has started suppressing, so silence is not mistaken for health" do
-    expect(Wayfinder::Signal).to receive(:log).with(:warn, /throttling BoomError/).once
+    expect(SodaFlex).to receive(:log).with(:warn, /throttling BoomError/).once
 
     6.times { throttle.allow?("BoomError") }
   end
