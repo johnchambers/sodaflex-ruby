@@ -42,9 +42,21 @@ module SodaFlex
       end
     end
 
+    # Shorter than this, a name must be a whole part of the key to match:
+    # "pan" is a card number in `card_pan` and nothing at all in `company`,
+    # which matching anywhere dropped from every lead. Longer names still match
+    # anywhere, so `userpassword` stays caught — and camelCase is read as its
+    # parts, so `stripeApiKey` is caught by `api_key` too.
+    WHOLE_PART_BELOW = 5
+
     def self.redact?(key, keys)
-      normalised = key.to_s.downcase
-      keys.any? { |candidate| normalised.include?(candidate.to_s.downcase) }
+      snake = key.to_s.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase
+      parts = snake.split(/[^a-z0-9]+/)
+
+      keys.any? do |candidate|
+        candidate = candidate.to_s.downcase
+        candidate.length < WHOLE_PART_BELOW ? parts.include?(candidate) : snake.include?(candidate)
+      end
     end
   end
 end

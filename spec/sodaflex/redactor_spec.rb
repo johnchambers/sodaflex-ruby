@@ -30,6 +30,21 @@ RSpec.describe SodaFlex::Redactor do
     expect(result.redacted_keys).to contain_exactly("api_token", "reset_password_url")
   end
 
+  # "pan" is a card number; matched anywhere it took "company" off every lead
+  # a brand sent, which is how Nibble's leads arrived without their business.
+  it "matches a short name only as a whole part of the key" do
+    result = described_class.call({ "company" => "keep", "card_pan" => "x", "panCode" => "y", "expansion" => "keep",
+                     "cvv" => "z", "ssn_last4" => "w" }, %w[pan cvv ssn])
+
+    expect(result.value).to eq({ "company" => "keep", "expansion" => "keep" })
+    expect(result.redacted_keys).to contain_exactly("card_pan", "panCode", "cvv", "ssn_last4")
+  end
+
+  it "still matches a longer name anywhere in the key" do
+    expect(described_class.call({ "userpassword" => "x", "stripeApiKey" => "y" }, %w[password api_key]).value)
+      .to be_empty
+  end
+
   it "is case insensitive" do
     expect(scrub({ "Password" => "x" }).value).to be_empty
   end

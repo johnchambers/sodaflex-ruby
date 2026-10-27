@@ -10,6 +10,11 @@ For a brand whose marketing site is on its own domain.
   the page the form was posted from as where they landed.
 - `config.own_hosts` (or `SODAFLEX_OWN_HOSTS`, comma-separated) lists the
   brand's other sites. Arriving from one of them is not recorded as a channel.
+- A redacted name shorter than five letters — `pan`, `cvv`, `cvc`, `ssn`,
+  `iban` — now matches only a whole part of a key. Matched anywhere, `pan`
+  removed `company` from every lead, so leads arrived without their business.
+  Longer names still match anywhere, and camelCase keys are read as their
+  parts, so `stripeApiKey` is caught by `api_key`.
 
 ## [0.4.0] — 2026-10-26
 
