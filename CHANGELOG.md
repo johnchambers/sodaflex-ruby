@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.1] — 2026-10-27
+
+For a brand whose marketing site is on its own domain.
+
+- A `referrer` and `landing_page` passed on as parameters win over the
+  request's own, so a site can say where its visitor really came from.
+  Before, the product recorded its own marketing site as the referrer, and
+  the page the form was posted from as where they landed.
+- `config.own_hosts` (or `SODAFLEX_OWN_HOSTS`, comma-separated) lists the
+  brand's other sites. Arriving from one of them is not recorded as a channel.
+
 ## [0.4.0] — 2026-10-26
 
 Renamed from `wayfinder-signal` to `sodaflex`: Wayfinder became SodaFlex.

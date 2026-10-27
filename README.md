@@ -109,6 +109,24 @@ rejected event is a lost event — redaction here means the secret never travels
 Never put passwords, session tokens, card data or raw request bodies in
 `properties`. The gem will catch the obvious cases; it cannot catch all of them.
 
+### Where a lead came from
+
+`include SodaFlex::Attribution` in the controllers a prospect passes through,
+and pass `sodaflex_attribution` with a lead. It keeps the first visit's
+`utm_*` tags, click identifiers, external referrer and landing page in a
+cookie for 90 days — first touch, not last.
+
+**A marketing site on another domain.** Its visitors reach the product only
+when they submit a form or follow a link, by which point the tags are behind
+them and the referrer is the marketing site. Have the site pass them on as
+fields or link parameters — `utm_source` and the rest, plus `referrer` and
+`landing_page` — and they win over what the product's own request says. List
+the site so arriving from it is not counted as a channel:
+
+```ruby
+config.own_hosts = %w[nibbleos.com]   # or SODAFLEX_OWN_HOSTS=nibbleos.com
+```
+
 ## Idempotency
 
 Every envelope carries a client-generated ULID as its `id`. SodaFlex has a unique

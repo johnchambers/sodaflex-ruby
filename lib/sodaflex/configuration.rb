@@ -17,6 +17,11 @@ module SodaFlex
     # server refuses these too, but redacting here means they never travel.
     attr_accessor :redact_keys
 
+    # The brand's other sites — a marketing site on its own domain, say. They
+    # are not a channel any more than the product's own pages are, so arriving
+    # from one is not recorded as where somebody came from.
+    attr_accessor :own_hosts
+
     def initialize
       @endpoint = setting("ENDPOINT", "SIGNAL_ENDPOINT")
       @brand_key = setting("BRAND_KEY", "PRODUCT_KEY")
@@ -41,6 +46,7 @@ module SodaFlex
         password password_confirmation token access_token refresh_token
         secret api_key authorization card_number cvv cvc pan iban ssn
       ]
+      @own_hosts = setting("OWN_HOSTS").to_s.split(",").map(&:strip).reject(&:empty?)
       @logger = defined?(::Rails) ? ::Rails.logger : nil
       @on_delivery_failure = nil
     end

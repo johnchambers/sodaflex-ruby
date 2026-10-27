@@ -74,6 +74,28 @@ RSpec.describe SodaFlex::Attribution do
       expect(controller.sodaflex_attribution).to be_empty
     end
 
+    # A marketing site on its own domain posts to the product, so by the time
+    # anybody reaches the product its request's referrer is that site. What the
+    # site passes on is where the visitor really came from.
+    it "prefers the referrer and landing page our own site passes on" do
+      controller = capture(params: { utm_source: "linkedin", referrer: "https://www.google.com/",
+                                     landing_page: "https://nibbleos.com/for-takeaways" },
+                           referer: "https://nibbleos.com/contact", url: "https://nibble.ie/contact")
+
+      expect(controller.sodaflex_attribution).to include(
+        "source" => "linkedin", "referrer" => "https://www.google.com/",
+        "landing_page" => "https://nibbleos.com/for-takeaways"
+      )
+    end
+
+    it "does not count the brand's other sites as where somebody came from" do
+      SodaFlex.configure { |config| config.own_hosts = %w[nibbleos.com] }
+
+      expect(capture(referer: "https://www.nibbleos.com/pricing").sodaflex_attribution).to be_empty
+      expect(capture(referer: "https://nibbleos.com/").sodaflex_attribution).to be_empty
+      expect(capture(referer: "https://notnibbleos.com/").sodaflex_attribution["referrer"]).to eq("https://notnibbleos.com/")
+    end
+
     it "records nothing when there is nothing to record" do
       controller = capture
 

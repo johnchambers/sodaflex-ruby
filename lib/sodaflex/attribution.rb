@@ -84,13 +84,15 @@ module SodaFlex
 
         # An external referrer only. Our own pages are not a channel, and
         # recording them would make the first internal click look like the
-        # source.
+        # source. One passed on by our own marketing site wins: it is where the
+        # visitor came from before that site, which this request cannot see.
         referrer = external_referrer
-        found["referrer"] = referrer if referrer
+        found["referrer"] ||= referrer if referrer
 
         # Worth keeping even with no source: which page somebody landed on says
-        # a good deal about what they were looking for.
-        found["landing_page"] = request.original_url.to_s.first(MAX_LENGTH) if found.any?
+        # a good deal about what they were looking for. Again, the page our own
+        # site says they first landed on wins over this one.
+        found["landing_page"] ||= request.original_url.to_s.first(MAX_LENGTH) if found.any?
 
         found
       end
@@ -100,11 +102,16 @@ module SodaFlex
         return nil if referrer.blank?
 
         host = URI.parse(referrer).host
-        return nil if host.blank? || host == request.host
+        return nil if host.blank? || host == request.host || own_host?(host)
 
         referrer.first(MAX_LENGTH)
       rescue URI::InvalidURIError
         nil
+      end
+
+      # nibbleos.com and www.nibbleos.com alike.
+      def own_host?(host)
+        SodaFlex.config.own_hosts.any? { |own| host == own || host.end_with?(".#{own}") }
       end
   end
 end
